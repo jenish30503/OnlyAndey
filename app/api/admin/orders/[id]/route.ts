@@ -3,11 +3,12 @@ import { orders } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { getAdminSession } from '@/lib/auth'
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
   const session = await getAdminSession()
   if (!session) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
+    const { id } = await context.params;
     const { status, paymentStatus } = await req.json()
     const updateData: any = {}
     
@@ -18,11 +19,12 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       return Response.json({ error: 'No fields to update' }, { status: 400 })
     }
 
-    const [updated] = await db
+    const updated = db
       .update(orders)
       .set(updateData)
-      .where(eq(orders.id, params.id))
+      .where(eq(orders.id, id))
       .returning()
+      .get()
 
     if (!updated) {
       return Response.json({ error: 'Order not found' }, { status: 404 })

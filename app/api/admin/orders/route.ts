@@ -20,7 +20,12 @@ export async function GET(req: Request) {
   const whereClause = conditions.length > 0 ? and(...conditions) : undefined
 
   try {
-    const data = await db.select().from(orders).where(whereClause).orderBy(desc(orders.createdAt))
+    let data;
+    if (whereClause) {
+      data = db.select().from(orders).where(whereClause).orderBy(desc(orders.createdAt)).all();
+    } else {
+      data = db.select().from(orders).orderBy(desc(orders.createdAt)).all();
+    }
 
     // Simple stats calculation for 'today' (using a simplified definition for all records)
     const todayOrders = data.length

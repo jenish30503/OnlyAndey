@@ -10,7 +10,7 @@ export async function GET() {
   if (!session) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const [config] = await db.select().from(pricing).where(eq(pricing.id, 'store'))
+    const config = db.select().from(pricing).where(eq(pricing.id, 'store')).get()
     if (!config) throw new Error('Pricing not found')
     
     return Response.json({
@@ -34,9 +34,9 @@ export async function PUT(req: Request) {
       return Response.json({ error: 'Invalid pricing format' }, { status: 400 })
     }
 
-    const [config] = await db.select().from(pricing).where(eq(pricing.id, 'store'))
+    const config = db.select().from(pricing).where(eq(pricing.id, 'store')).get()
 
-    const [updated] = await db
+    const updated = db
       .update(pricing)
       .set({ 
         boiled, 
@@ -46,6 +46,7 @@ export async function PUT(req: Request) {
       })
       .where(eq(pricing.id, 'store'))
       .returning()
+      .get()
 
     return Response.json({ success: true, pricing: updated })
   } catch (error) {
