@@ -6,13 +6,13 @@ export const pricing = sqliteTable('pricing', {
   boiled: text('boiled', { mode: 'json' }).$type<number[]>().notNull(), 
   raw: text('raw', { mode: 'json' }).$type<number[]>().notNull(),
   version: integer('version').notNull().default(1), 
-  updatedAt: text('updated_at').notNull().default(new Date().toISOString()),
+  updatedAt: text('updated_at').notNull().$defaultFn(() => new Date().toISOString()),
 })
 
 export const orders = sqliteTable('egg_orders', {
   id: text('id').primaryKey(), 
   userId: text('userId').notNull(),
-  createdAt: text('created_at').notNull().default(new Date().toISOString()),
+  createdAt: text('created_at').notNull().$defaultFn(() => new Date().toISOString()),
   boiledQuantity: integer('boiled_quantity').notNull(), 
   rawQuantity: integer('raw_quantity').notNull(),
   boiledPrice: real('boiled_price').notNull(), 
