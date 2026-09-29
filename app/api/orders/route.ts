@@ -13,20 +13,23 @@ export async function POST(request: Request) {
   if (!parsed.success) return Response.json({ error: parsed.error.issues[0]?.message ?? 'Check your room and phone number.' }, { status: 400 })
   const input = parsed.data
   try {
-    const result = await db.transaction(async tx => {
-      const [config] = await tx.select().from(pricing).where(and(eq(pricing.id, 'store'), eq(pricing.userId, OWNER_ID)))
+    const result = db.transaction((tx) => {
+      const config = tx.select().from(pricing).where(and(eq(pricing.id, 'store'), eq(pricing.userId, OWNER_ID))).get()
       if (!config) throw new Error('Pricing unavailable')
-      const [existing] = await tx.select().from(orders).where(and(eq(orders.id, input.id), eq(orders.userId, OWNER_ID)))
+      const existing = tx.select().from(orders).where(and(eq(orders.id, input.id), eq(orders.userId, OWNER_ID))).get()
       if (existing) {
         if (existing.room !== input.room || existing.phone !== input.phone || existing.boiledQuantity !== input.boiled || existing.rawQuantity !== input.raw) return { conflict: true as const }
         return { order: existing }
       }
       if (config.version !== input.version) return { changed: true as const }
       const totals = calculateOrder(input, config)
-      const [order] = await tx.insert(orders).values({ id: input.id, userId: OWNER_ID, boiledQuantity: input.boiled, rawQuantity: input.raw, boiledPrice: totals.boiledPrice, rawPrice: totals.rawPrice, boiledSubtotal: totals.boiledSubtotal, rawSubtotal: totals.rawSubtotal, total: totals.total, room: input.room, phone: input.phone }).onConflictDoNothing().returning()
+      
+      const order = tx.insert(orders).values({ id: input.id, userId: OWNER_ID, boiledQuantity: input.boiled, rawQuantity: input.raw, boiledPrice: totals.boiledPrice, rawPrice: totals.rawPrice, boiledSubtotal: totals.boiledSubtotal, rawSubtotal: totals.rawSubtotal, total: totals.total, room: input.room, phone: input.phone }).onConflictDoNothing().returning().get()
+      
       if (!order) return { conflict: true as const }
       return { order }
     })
+    
     if ('changed' in result) return Response.json({ error: 'Prices have just been updated. Review your total and place your order again.', code: 'PRICING_CHANGED' }, { status: 409 })
     if ('conflict' in result) return Response.json({ error: 'This order request has already been used. Please retry.' }, { status: 409 })
     const o = result.order
