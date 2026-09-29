@@ -283,3 +283,6 @@ html { scroll-behavior: smooth; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+.wordmark-logo { height: 26px; width: auto; object-fit: contain; }
+@media (max-width: 800px) { .wordmark-logo { height: 22px; } }
