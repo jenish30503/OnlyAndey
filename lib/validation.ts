@@ -5,8 +5,8 @@ export const orderInput = z.object({
   id: z.uuid(),
   boiled: z.number().int().nonnegative(), raw: z.number().int().nonnegative(),
   version: z.number().int().positive(),
-  room: z.string().trim().min(1, 'Enter your room number.').max(40).regex(/^[\p{L}\p{N}\s/#.-]+$/u, 'Enter a valid room number.'),
-  phone: z.string().trim().transform(v => v.replace(/[\s()-]/g, '')).refine(v => /^(?:\+91)?[6-9]\d{9}$/.test(v), 'Enter a valid 10-digit Indian phone number.'),
+  room: z.string().trim().regex(/^\d{3}$/, 'Room number must be exactly 3 digits.'),
+  phone: z.string().trim().transform(v => v.replace(/[\s()-]/g, '')).refine(v => /^\d{10}$/.test(v), 'Phone number must be exactly 10 digits.'),
 }).refine(v => v.boiled + v.raw > 0, 'Tap an egg to start your order.')
 export const pricingInput = z.object({
   boiled: z.array(z.number().positive().max(10000).multipleOf(0.01)).length(6),
