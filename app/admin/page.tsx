@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null)
@@ -28,14 +28,54 @@ export default function AdminPage() {
     checkAuth()
   }, [])
 
+  const knownOrders = useRef(new Set<string>())
+  const firstLoad = useRef(true)
+
+  useEffect(() => {
+    if (authenticated && typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+    }
+  }, [authenticated])
+
   useEffect(() => {
     if (authenticated) {
       fetchOrders()
       fetchPricing()
-      const interval = setInterval(fetchOrders, 30000) // auto-refresh
-      return () => clearInterval(interval)
+      const interval = setInterval(fetchOrders, 30000)
+      const notifInterval = setInterval(checkNewOrders, 5000)
+      return () => { clearInterval(interval); clearInterval(notifInterval) }
     }
   }, [authenticated, statusFilter, paymentFilter])
+
+  const checkNewOrders = async () => {
+    try {
+      const url = new URL(window.location.origin + '/api/admin/orders')
+      url.searchParams.set('status', 'New')
+      const res = await fetch(url.toString())
+      const data = await res.json()
+      if (data.orders) {
+        let newFound = false;
+        data.orders.forEach((o: any) => {
+          if (!knownOrders.current.has(o.id)) {
+            if (!firstLoad.current) {
+              const text = `Room ${o.room} ordered ${o.boiledQuantity} boiled, ${o.rawQuantity} raw eggs.`
+              if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+                new Notification('New Egg Order!', { body: text })
+              } else {
+                alert('NEW ORDER!\n' + text)
+              }
+            }
+            knownOrders.current.add(o.id)
+            newFound = true;
+          }
+        });
+        if (newFound && !firstLoad.current) fetchOrders();
+        firstLoad.current = false;
+      }
+    } catch (e) {}
+  }
 
   const checkAuth = async () => {
     try {
