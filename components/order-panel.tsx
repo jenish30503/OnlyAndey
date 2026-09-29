@@ -17,7 +17,7 @@ export function OrderPanel({ quantities, pricing, step, setStep, receipt, onSubm
   const totals = pricing ? calculateOrder(quantities, pricing) : null
   async function submit(event: FormEvent) {
     event.preventDefault()
-    const next = { room: /^\\d{3}$/.test(room.trim()) ? undefined : 'Room number must be exactly 3 digits.', phone: /^(?:\+91)?[6-9]\d{9}$/.test(phone.replace(/[\s()-]/g, '')) ? undefined : 'Enter a valid 10-digit phone number.' }
+    const next = { room: /^\d{3}$/.test(room.trim()) ? undefined : 'Room number must be exactly 3 digits.', phone: /^\d{10}$/.test(phone.replace(/[\s()-]/g, '')) ? undefined : 'Phone number must be exactly 10 digits.' }
     setErrors(next)
     if (!next.room && !next.phone) await onSubmit(room.trim(), phone)
   }
