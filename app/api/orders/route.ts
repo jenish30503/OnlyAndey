@@ -35,21 +35,27 @@ export async function POST(request: Request) {
     
     const o = result.order
 
-    // --- WHATSAPP NOTIFICATION ---
-    const waPhone = process.env.WHATSAPP_PHONE;
-    const waApiKey = process.env.WHATSAPP_APIKEY;
-    if (waPhone && waApiKey) {
-      try {
-        const text = `🍳 *New Order! (Room ${o.room})*\n\nBoiled: ${o.boiledQuantity}\nRaw: ${o.rawQuantity}\nTotal: ₹${o.total}\nCustomer Phone: ${o.phone}`;
-        const url = `https://api.callmebot.com/whatsapp.php?phone=${waPhone}&text=${encodeURIComponent(text)}&apikey=${waApiKey}`;
-        
-        // Fire and forget so it doesn't slow down the customer's checkout
-        fetch(url).then(res => {
-          if (!res.ok) console.error("WhatsApp notification failed:", res.status)
-        }).catch(e => console.error("WhatsApp notification network error:", e));
-      } catch (err) {
-        console.error("WhatsApp notification setup failed:", err);
-      }
+    // --- WHATSAPP NOTIFICATIONS ---
+    const phones = (process.env.WHATSAPP_PHONE || '').split(',');
+    const keys = (process.env.WHATSAPP_APIKEY || '').split(',');
+    
+    if (phones.length > 0 && keys.length > 0) {
+      const text = `🍳 *New Order! (Room ${o.room})*\n\nBoiled: ${o.boiledQuantity}\nRaw: ${o.rawQuantity}\nTotal: ₹${o.total}\nCustomer Phone: ${o.phone}`;
+      const encodedText = encodeURIComponent(text);
+
+      phones.forEach((phone, index) => {
+        const apikey = keys[index] || keys[0]; // fallback to first key if missing
+        if (phone.trim() && apikey.trim()) {
+          try {
+            const url = `https://api.callmebot.com/whatsapp.php?phone=${phone.trim()}&text=${encodedText}&apikey=${apikey.trim()}`;
+            fetch(url).then(res => {
+              if (!res.ok) console.error("WhatsApp notification failed for " + phone + ":", res.status)
+            }).catch(e => console.error("WhatsApp network error for " + phone + ":", e));
+          } catch (err) {
+            console.error("WhatsApp setup failed for " + phone + ":", err);
+          }
+        }
+      });
     }
     // -----------------------------
 
