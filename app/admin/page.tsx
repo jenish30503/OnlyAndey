@@ -19,6 +19,7 @@ export default function AdminPage() {
   const [pricingLoading, setPricingLoading] = useState(false)
   const [pricingSaving, setPricingSaving] = useState(false)
   const [pricingFeedback, setPricingFeedback] = useState('')
+  const [notifPerm, setNotifPerm] = useState('default')
   
   // Pricing Arrays (length 6)
   const [boiledPrices, setBoiledPrices] = useState<number[]>([])
@@ -33,11 +34,19 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (authenticated && typeof window !== 'undefined' && 'Notification' in window) {
-      if (Notification.permission === 'default') {
-        Notification.requestPermission();
-      }
+      setNotifPerm(Notification.permission);
     }
   }, [authenticated])
+
+  const requestNotif = () => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      Notification.requestPermission().then(p => {
+        setNotifPerm(p);
+        if (p === 'granted') alert('Notifications enabled successfully!');
+        if (p === 'denied') alert('Notifications are blocked by your browser settings. Please allow them in Chrome settings.');
+      });
+    }
+  }
 
   useEffect(() => {
     if (authenticated) {
@@ -233,7 +242,19 @@ export default function AdminPage() {
           <img src="/logo.png" alt="Only Andey" className="h-6 w-auto object-contain" />
           <span className="bg-[#E8543E]/10 text-[#E8543E] px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wider">Admin</span>
         </div>
-        <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-gray-800 font-medium">Logout</button>
+        <div className="flex items-center gap-4">
+          {notifPerm === 'default' && (
+            <button onClick={requestNotif} className="text-xs bg-blue-50 border border-blue-200 text-blue-700 px-3 py-1.5 rounded-full font-bold hover:bg-blue-100 transition-colors">
+              🔔 Enable Notifications
+            </button>
+          )}
+          {notifPerm === 'denied' && (
+            <button onClick={() => alert('Please click the lock icon next to localhost in your URL bar and allow notifications.')} className="text-xs bg-red-50 border border-red-200 text-red-700 px-3 py-1.5 rounded-full font-bold">
+              🔕 Notifications Blocked
+            </button>
+          )}
+          <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-gray-800 font-medium ml-4">Logout</button>
+        </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-6 mt-8 space-y-8">
