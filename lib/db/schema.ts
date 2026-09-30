@@ -26,4 +26,10 @@ export const orders = sqliteTable('egg_orders', {
   paymentStatus: text('payment_status').notNull().default('Pending'),
 })
 
+export const shopSettings = sqliteTable('shop_settings', {
+  id: text('id').primaryKey(),
+  isOpen: integer('is_open').notNull().default(1),
+  updatedAt: text('updated_at').notNull().$defaultFn(() => new Date().toISOString()),
+})
+
 export type OrderRow = typeof orders.$inferSelect

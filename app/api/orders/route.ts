@@ -1,5 +1,5 @@
 import { db } from '@/lib/db'
-import { orders, pricing } from '@/lib/db/schema'
+import { orders, pricing, shopSettings } from '@/lib/db/schema'
 import { and, eq } from 'drizzle-orm'
 import { calculateOrder, OWNER_ID } from '@/lib/pricing'
 import { orderInput } from '@/lib/validation'
@@ -13,6 +13,12 @@ export async function POST(request: Request) {
   if (!parsed.success) return Response.json({ error: parsed.error.issues[0]?.message ?? 'Check your room and phone number.' }, { status: 400 })
   const input = parsed.data
   try {
+    // Block orders when shop is closed
+    const shopRow = db.select().from(shopSettings).where(eq(shopSettings.id, 'store')).get()
+    if (shopRow && shopRow.isOpen === 0) {
+      return Response.json({ error: 'We\'re closed right now. Orders will open again tomorrow!' }, { status: 403 })
+    }
+
     const result = db.transaction((tx) => {
       const config = tx.select().from(pricing).where(and(eq(pricing.id, 'store'), eq(pricing.userId, OWNER_ID))).get()
       if (!config) throw new Error('Pricing unavailable')

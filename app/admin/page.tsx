@@ -20,6 +20,7 @@ export default function AdminPage() {
   const [pricingSaving, setPricingSaving] = useState(false)
   const [pricingFeedback, setPricingFeedback] = useState('')
   const [notifPerm, setNotifPerm] = useState('default')
+  const [shopOpen, setShopOpen] = useState<boolean | null>(null)
   
   // Pricing Arrays (length 6)
   const [boiledPrices, setBoiledPrices] = useState<number[]>([])
@@ -48,10 +49,36 @@ export default function AdminPage() {
     }
   }
 
+  const fetchShopStatus = async () => {
+    try {
+      const res = await fetch('/api/shop-status')
+      const data = await res.json()
+      setShopOpen(data.isOpen)
+    } catch (e) {}
+  }
+
+  const toggleShop = async () => {
+    if (shopOpen) {
+      if (!confirm('Close the shop? Customers will not be able to order.')) return
+    }
+    try {
+      const res = await fetch('/api/shop-status', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isOpen: !shopOpen })
+      })
+      const data = await res.json()
+      if (data.isOpen !== undefined) setShopOpen(data.isOpen)
+    } catch (e) {
+      alert('Failed to update shop status')
+    }
+  }
+
   useEffect(() => {
     if (authenticated) {
       fetchOrders()
       fetchPricing()
+      fetchShopStatus()
       const interval = setInterval(fetchOrders, 30000)
       const notifInterval = setInterval(checkNewOrders, 5000)
       return () => { clearInterval(interval); clearInterval(notifInterval) }
@@ -251,6 +278,18 @@ export default function AdminPage() {
           {notifPerm === 'denied' && (
             <button onClick={() => alert('Please click the lock icon next to localhost in your URL bar and allow notifications.')} className="text-xs bg-red-50 border border-red-200 text-red-700 px-3 py-1.5 rounded-full font-bold">
               🔕 Notifications Blocked
+            </button>
+          )}
+          {shopOpen !== null && (
+            <button
+              onClick={toggleShop}
+              className={`text-xs font-bold px-3 py-1.5 rounded-full border transition-colors ${
+                shopOpen
+                  ? 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100'
+                  : 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100'
+              }`}
+            >
+              {shopOpen ? '🟢 Shop Open' : '🔴 Shop Closed'}
             </button>
           )}
           <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-gray-800 font-medium ml-4">Logout</button>

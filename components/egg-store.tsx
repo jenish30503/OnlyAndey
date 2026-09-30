@@ -5,6 +5,7 @@ import useSWR from 'swr'
 import { ArrowDown, ArrowUpRight, ShoppingBag } from 'lucide-react'
 import { EggProduct } from '@/components/egg-product'
 import { OrderPanel } from '@/components/order-panel'
+import { ClosedScreen } from '@/components/closed-screen'
 import { type EggType, type Pricing, type Quantities, type Receipt } from '@/lib/pricing'
 
 async function fetchPricing(url: string): Promise<Pricing> {
@@ -12,7 +13,12 @@ async function fetchPricing(url: string): Promise<Pricing> {
   if (!response.ok) throw new Error('Couldn’t load prices.')
   return response.json()
 }
+async function fetchShopStatus(url: string): Promise<{ isOpen: boolean }> {
+  const response = await fetch(url)
+  return response.json()
+}
 export function EggStore() {
+  const { data: shopStatus } = useSWR('/api/shop-status', fetchShopStatus, { refreshInterval: 15000, revalidateOnFocus: true })
   const { data: pricing, error: pricingError, mutate } = useSWR<Pricing>('/api/pricing', fetchPricing, { refreshInterval: 30000, revalidateOnFocus: true })
   const [quantities, setQuantities] = useState<Quantities>({ boiled: 0, raw: 0 })
   const [step, setStep] = useState<'cart' | 'details'>('cart')
@@ -46,6 +52,7 @@ export function EggStore() {
     finally { setPending(false); submitting.current = false }
   }
   function goToOrder() { document.getElementById('your-order')?.scrollIntoView({ behavior: 'smooth', block: 'center' }) }
+  if (shopStatus && !shopStatus.isOpen) return <ClosedScreen />
   return <div className="store-page" data-ready={ready}>
     <header className="store-header"><a href="/" className="wordmark" aria-label="Only Andey home"><img src="/logo.png" alt="Only Andey" className="wordmark-logo" /></a><div className="header-right"><span className="delivery-status"><span />Room delivery, made easy</span><button className="cart-indicator" onClick={goToOrder} aria-label={`View order, ${count} eggs`}><ShoppingBag size={17} /><span>{count}</span></button></div></header>
     <main className="store-main"><section className="store-intro" aria-labelledby="store-title"><h1 id="store-title">Good eggs.<br /><span>Right to your room.</span></h1><p>Pick your eggs. We&apos;ll handle the rest.</p></section>
