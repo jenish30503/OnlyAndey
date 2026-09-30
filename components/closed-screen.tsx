@@ -18,7 +18,7 @@ export function ClosedScreen() {
             <span className="z z3">Z</span>
           </div>
           <img
-            src="/sleeping-egg.png"
+            src="/sleeping-egg.svg"
             alt="Sleeping egg with a night cap"
             className="closed-egg-img"
           />
