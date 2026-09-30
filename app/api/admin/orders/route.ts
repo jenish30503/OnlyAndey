@@ -32,7 +32,8 @@ export async function GET(req: Request) {
 
     const activeOrders = allOrders.filter(o => o.status !== 'Cancelled')
     const todayOrders = activeOrders.length
-    const todayRevenue = activeOrders.reduce((sum, order) => sum + Number(order.total || 0), 0)
+    const paidActiveOrders = allOrders.filter(o => o.status !== 'Cancelled' && o.paymentStatus === 'Paid')
+    const todayRevenue = paidActiveOrders.reduce((sum, order) => sum + Number(order.total || 0), 0)
     const pendingOrders = allOrders.filter(o => o.status === 'New').length
     const deliveredOrders = allOrders.filter(o => o.status === 'Delivered').length
 
