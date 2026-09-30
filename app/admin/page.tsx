@@ -402,9 +402,9 @@ export default function AdminPage() {
                       'bg-[#DD5B3B] text-white';
 
                     return (
-                      <tr key={order.id} className="group relative hover:bg-gray-50/30 transition-colors">
-                        {isNew && <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#DD5B3B] rounded-r" />}
-                        <td className="px-6 py-4">
+                      <tr key={order.id} className="group hover:bg-gray-50/30 transition-colors">
+                        <td className="px-6 py-4 relative">
+                          {isNew && <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#DD5B3B] rounded-r" />}
                           <div className="flex items-baseline gap-2">
                             <span className="font-extrabold text-[#2A2420]">#{order.id.substring(0,6).toUpperCase()}</span>
                             <span className="text-gray-400 text-xs font-medium">{time}</span>
