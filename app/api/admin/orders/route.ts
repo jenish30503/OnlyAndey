@@ -27,11 +27,14 @@ export async function GET(req: Request) {
       data = db.select().from(orders).orderBy(desc(orders.createdAt)).all();
     }
 
-    // Simple stats calculation for 'today' (using a simplified definition for all records)
-    const todayOrders = data.length
-    const todayRevenue = data.reduce((sum, order) => sum + Number(order.total), 0)
-    const pendingOrders = data.filter(o => o.status === 'New').length
-    const deliveredOrders = data.filter(o => o.status === 'Delivered').length
+    // Always calculate global stats from ALL orders regardless of UI table filter
+    const allOrders = db.select().from(orders).all();
+
+    const activeOrders = allOrders.filter(o => o.status !== 'Cancelled')
+    const todayOrders = activeOrders.length
+    const todayRevenue = activeOrders.reduce((sum, order) => sum + Number(order.total || 0), 0)
+    const pendingOrders = allOrders.filter(o => o.status === 'New').length
+    const deliveredOrders = allOrders.filter(o => o.status === 'Delivered').length
 
     return Response.json({
       orders: data,
