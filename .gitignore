@@ -18,3 +18,10 @@ local.db
 local.db-journal
 .env
 
+
+# Security & Logs
+cookies.txt
+*.log
+*.sqlite
+*.db
+!.env.example

@@ -188,7 +188,7 @@ export default function AdminPage() {
     setPricingFeedback('')
     try {
       const res = await fetch('/api/admin/pricing', {
-        method: 'POST',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ boiled: boiledPrices, raw: rawPrices })
       })
