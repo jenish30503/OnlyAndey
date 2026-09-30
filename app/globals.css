@@ -170,7 +170,7 @@
 html { scroll-behavior: smooth; }
 .store-page { min-height: 100svh; display: flex; flex-direction: column; background: var(--coral); }
 .store-header { width: min(1200px, calc(100% - 96px)); margin: 0 auto; min-height: 101px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #29231d26; }
-.wordmark { font-size: 23px; letter-spacing: -1.3px; font-weight: 900; text-decoration: none; line-height: 1; }
+.wordmark { display: inline-flex; align-items: center; font-size: 23px; letter-spacing: -1.3px; font-weight: 900; text-decoration: none; line-height: 1; }
 .wordmark-period { color: var(--cream); }
 .header-right { display: flex; align-items: center; gap: 26px; }
 .delivery-status { font-size: 11px; display: flex; align-items: center; gap: 9px; }
@@ -284,5 +284,4 @@ html { scroll-behavior: smooth; }
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
 
-.wordmark-logo { height: 26px; width: auto; object-fit: contain; }
-@media (max-width: 800px) { .wordmark-logo { height: 22px; } }
+.wordmark-logo { height: clamp(28px, 6vw, 35px); width: auto; object-fit: contain; display: block; }
