@@ -11,15 +11,10 @@ export function ClosedScreen() {
       </header>
 
       <main className="closed-main">
-        <div className="closed-egg-container">
-          <div className="closed-zzz" aria-hidden="true">
-            <span className="z z1">z</span>
-            <span className="z z2">z</span>
-            <span className="z z3">Z</span>
-          </div>
+        <div className="closed-egg-wrapper">
           <img
-            src="/sleeping-egg.svg"
-            alt="Sleeping egg with a night cap"
+            src="/sleeping-egg.png"
+            alt="Sleeping egg"
             className="closed-egg-img"
           />
         </div>
